@@ -12,7 +12,6 @@ Use this template to define one Agent Blueprint Canvas.
 
 - Type:
   Name:
-  Notes:
 
 ## Mission
 
@@ -37,13 +36,11 @@ List external callable capabilities.
 - Type: `read | knowledge | write | agent`
   Name:
   Approval required: `true | false`
-  Notes:
 
 ## Output
 
 - Type: `text | structured | handoff`
   Name:
-  Notes:
 
 ## Controls
 

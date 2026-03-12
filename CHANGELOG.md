@@ -9,3 +9,7 @@
 - Excalidraw component library for visual composition
 - Text template for workshop and documentation use
 - Worked multi-agent example showing shared context and Context View
+
+### Fixed
+
+- Removed undocumented `Notes:` field from the template Inputs, Tools, and Output sections; the field is not part of the manifest spec (#12)
