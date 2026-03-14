@@ -215,7 +215,7 @@ These belong to the workflow layer, not the canvas specification.
 
 ### Human Approval Semantics
 
-The canvas declares approval requirements through tool-level markers such as `⚠`.
+The canvas declares approval requirements through tool-level approval fields.
 
 This means:
 
@@ -281,10 +281,13 @@ Typical input types are:
 - **Query**: the caller expects a direct answer
 - **Command**: the caller expects an action to be performed
 - **Event**: the agent reacts to an external signal or state change
-- **Handoff**: the agent receives an upstream artifact or delegated work item
 
 Inputs may be structured or unstructured.
 In implementation terms, this may correspond to an API request, event payload, message envelope, or user message.
+
+Inputs define how an agent is invoked.
+They do not encode how control reached that agent from a previous step in a workflow or multi-agent interaction.
+Agent-to-agent control transfer is represented as an Output outcome on the sending agent, while the receiving agent is modeled through its normal input contract.
 
 Cardinality: **1..N**
 
@@ -380,6 +383,10 @@ Tool types:
 - **Write**: mutates external state
 - **Agent**: invokes another agent as an external capability
 
+An **Agent** tool means invoke-and-return.
+The calling agent remains in control, receives the result, and continues execution after the delegated work completes.
+This is distinct from a handoff, where control transfers away from the current agent.
+
 Tool approval markers are tool-level execution constraints.
 They indicate that a specific tool invocation requires human approval before execution.
 
@@ -401,6 +408,9 @@ Supported output forms:
 - **Text**
 - **Structured**
 - **Handoff**
+
+A **Handoff** output transfers control from the current agent to another agent or workflow destination.
+It is a routing outcome, not a returned artifact.
 
 Artifacts created through write tools are not part of the Output section.
 They are considered side effects of tool execution.
@@ -478,7 +488,8 @@ When moving from a single canvas to a larger system view:
 - agents that share the same session context should be enclosed by the same Context Boundary
 - agents without an explicit shared boundary are assumed to operate in separate implicit contexts
 - calls to external agents are modeled through **Agent** tools
-- handoff between agents may be represented as an allowed **Output** outcome when control moves from one agent to another
+- handoff between agents is represented through an allowed **Output** outcome on the sending agent when control moves from one agent to another
+- the receiving agent is modeled through its normal input contract rather than a special handoff input type
 - orchestration emerges from the placement of canvases within a larger workflow or system diagram
 - connectors between canvases are standard diagramming elements and are outside the Agent Blueprint Canvas specification
 - shared runtime or context relationships may be represented at the system layer, not inside the canvas itself
@@ -557,7 +568,7 @@ agent_blueprint_canvas:
     mode: "delegated" # autonomous | delegated
 
   inputs:
-    - type: "query" # query | command | event | handoff
+    - type: "query" # query | command | event
       name: "user_question"
 
   mission: >
