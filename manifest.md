@@ -4,6 +4,10 @@
 
 The Agent Blueprint Canvas is a visual design language for describing agents and multi-agent systems before implementation.
 
+Project slogan:
+
+> Reveal the Forest Behind the Trees.
+
 Its purpose is to give Business Analysts, Architects, and Engineers a shared artifact that is:
 
 - simple enough to use in live workshops
@@ -32,6 +36,29 @@ It is not:
 
 It is a structured design sketch that a business stakeholder can review and an engineer can use as the basis for detailed technical design.
 
+### Behavioral Building Blocks
+
+The Agent Blueprint exists to model a specific kind of design unit: the semantic actor.
+
+In a larger system, different building blocks have different behavioral properties:
+
+- workflow blocks model deterministic sequencing and control logic
+- state-machine blocks model deterministic state evolution
+- agent blueprints model non-deterministic semantic actors
+
+Real systems often combine all three.
+The purpose of the canvas is not to absorb workflow or state-machine notation, but to let semantic actors be represented clearly alongside those deterministic structures.
+
+This distinction matters because the behavioral character of a system depends on the kinds of blocks from which it is composed.
+A system may contain deterministic orchestration and still behave non-deterministically because one or more of its components are semantic agents.
+
+The key modeling move is therefore to separate control logic from semantic judgment:
+
+- control logic belongs to workflow and state-based notation
+- semantic judgment belongs to agent notation
+
+Once those are separated, hybrid systems become easier to reason about, challenge, and hand off to engineering.
+
 ---
 
 ## Scope
@@ -42,6 +69,9 @@ This manifest defines:
 - the meaning of each canvas section
 - how a canvas maps to implementation concepts
 - how canvases participate in a larger system view
+
+This manifest is the semantic authority for the canvas.
+The canonical machine-readable structure is defined separately in `schemas/agent-blueprint-canvas.schema.json`.
 
 This manifest does not define:
 
@@ -81,6 +111,56 @@ Multiple canvases can be placed inside a broader system view to represent:
 
 The single-agent canvas is the base unit from which larger designs are composed.
 
+### Communication vs. Shared Context
+
+Communication topology and shared working context are separate concerns.
+
+- communication defines which participants can exchange messages or signals
+- shared context defines which participants can read from the same working memory or session state
+
+As a result:
+
+- a communication relationship does not by itself imply shared context
+- a shared context relationship does not by itself imply the same communication surface
+
+The system view may therefore include both:
+
+- **Context Boundaries** to show shared working context
+- **Channels** to show communication surfaces between participants
+
+Channels are a system-view concept.
+They may represent direct conversations, group conversations, event buses, or similar communication surfaces without changing the canvas structure itself.
+
+Channels carry three high-level communication message types:
+
+- **Query**: asks for information or judgment
+- **Command**: requests a change in the state of the world outside the agent's sealed internal context
+- **Event**: reports that a relevant fact or world-state change has happened
+
+Handoff is not a communication message type.
+It is a control-transfer mechanism between agents inside the same Context Boundary.
+
+These message types are modeled at the canvas level as semantic categories only.
+Reply structures, acknowledgements, clarifications, acceptance, rejection, completion signaling, and similar protocol details belong to downstream model and implementation design.
+
+The canvas should describe an agent in terms of the interactions it can participate in, not in terms of social roles such as manager, worker, or peer.
+
+### Team-Level Intake
+
+In the system view, a Context Boundary may act as the intake surface for channel communication.
+
+This means:
+
+- a channel may address a Context Boundary rather than a specific agent
+- the communication is thereby addressed to the shared team represented by that boundary
+- one enclosed agent may take responsibility for the message based on its communication capability and the team's operating logic
+
+The Blueprint does not prescribe how that selection happens.
+It may be deterministic, negotiated, policy-driven, or emergent from the surrounding system design.
+
+A single agent may be treated as an implicit one-agent team.
+In that case, a direct connection to an agent is shorthand for a channel addressed to that agent's implicit Context Boundary.
+
 ---
 
 ## Context Boundary
@@ -97,6 +177,10 @@ Within the canvas, the following terms are treated as equivalent at the conceptu
 
 If multiple agents are enclosed by the same Context Boundary, they share the same working context for that run or session.
 This means they operate over the same conceptual memory space, even if they only use different parts of it.
+
+Agents inside the same Context Boundary may also be treated as one execution team for the purposes of receiving work from a channel.
+Which enclosed agent actually takes responsibility is not defined by the boundary itself.
+That remains a matter of agent capability and system-level coordination.
 
 If an agent is shown without an explicit boundary, the default assumption is that it operates in its own implicit context boundary.
 
@@ -138,7 +222,7 @@ Crossing a Context Boundary is always explicit.
 
 - agents inside the same boundary may hand off directly
 - agents outside the boundary do not share context automatically
-- external agents are invoked as tools and communicate through tool inputs and outputs
+- interactions across a boundary are modeled through channels or tools, not as handoffs
 
 This rule prevents accidental assumptions of hidden state sharing across independent systems.
 
@@ -148,8 +232,24 @@ When an agent performs a handoff to another agent inside the same Context Bounda
 
 - control moves to the next agent
 - the next agent continues within the same shared context
+- the same overall task or conversational thread continues
 - artifacts produced earlier remain available in that context
 - no explicit state transfer is required at the canvas level
+
+In this sense, agents enclosed by the same Context Boundary may act as a team that continues the same task through internal control transfer.
+
+A handoff therefore preserves continuity of:
+
+- the same task or thread
+- the same shared working context
+- the same artifacts already available in that context
+
+A handoff does not by itself imply:
+
+- tool invocation
+- cross-boundary delegation
+- a new communication channel
+- an explicit state transfer artifact
 
 ---
 
@@ -196,9 +296,10 @@ When explicit workflow semantics are required, they should be modeled in that wo
 
 The integration points between workflow and canvas are:
 
-- workflow enters an agent through its **Inputs**
-- workflow leaves an agent through its **Outputs**
+- workflow or channel communication enters an agent through its **Incoming** communication capability
+- workflow or channel communication may be initiated by an agent through its **Outgoing** communication capability
 - external capability access leaves an agent through its **Tools**
+- intra-team control transfer leaves an agent through its **Handoffs**
 
 ### Out of Scope for the Canvas Spec
 
@@ -213,16 +314,16 @@ The Agent Blueprint Canvas does not standardize:
 
 These belong to the workflow layer, not the canvas specification.
 
-### Human Approval Semantics
+### Approval And Consent Semantics
 
-The canvas declares approval requirements through tool-level approval fields.
+Approval and consent are execution-policy concerns that belong outside the v1 canvas.
 
 This means:
 
-- the canvas defines which capability requires approval
-- the workflow defines where and how the approval happens
+- the canvas identifies communication, tools, controls, and handoffs
+- the surrounding implementation decides whether execution requires prior approval, pre-granted consent, or dynamic consent at runtime
 
-No separate human-actor primitive is required in the canvas specification itself.
+No separate human-actor primitive or per-item approval marker is required in the v1 canvas specification itself.
 
 ### Dynamic Multiplicity
 
@@ -236,16 +337,17 @@ If the surrounding workflow invokes the same agent many times, multiplicity shou
 
 An Agent Blueprint Canvas describes one agent.
 
-The canvas contains eight sections:
+The canvas contains nine sections:
 
 1. Header
-2. Inputs
+2. Incoming
 3. Mission
 4. Context View
 5. Skills
 6. Tools
-7. Output
+7. Outgoing
 8. Controls
+9. Handoffs
 
 ---
 
@@ -270,26 +372,26 @@ Mode is a design-level property, not a derived runtime label.
 
 ---
 
-## Inputs
+## Incoming
 
-Inputs define how the agent may be invoked.
+Incoming defines which high-level communication acts the agent may receive through channels.
 
-An input maps to a request contract: the information the agent expects to receive when execution begins.
+Typical incoming communication types are:
 
-Typical input types are:
+- **Query**: the agent may receive a request for information or judgment
+- **Command**: the agent may receive a request to cause a change in the state of the world outside its sealed internal context
+- **Event**: the agent may receive notice that a relevant fact or world-state change has happened
 
-- **Query**: the caller expects a direct answer
-- **Command**: the caller expects an action to be performed
-- **Event**: the agent reacts to an external signal or state change
+At the canvas level, these are semantic categories only.
+Protocol details such as replies, acknowledgements, clarifications, acceptance, rejection, completion reporting, and similar exchange mechanics are outside the scope of the canvas.
 
-Inputs may be structured or unstructured.
-In implementation terms, this may correspond to an API request, event payload, message envelope, or user message.
+All incoming messages affect the agent's internal session context because they become part of its working history.
+The message types are not distinguished by internal context change.
+They are distinguished by their semantic relation to the state of the world.
 
-Inputs define how an agent is invoked.
-They do not encode how control reached that agent from a previous step in a workflow or multi-agent interaction.
-Agent-to-agent control transfer is represented as an Output outcome on the sending agent, while the receiving agent is modeled through its normal input contract.
+If an agent receives work through handoff, the receiving side is still interpreted through its normal Incoming capability.
 
-Cardinality: **1..N**
+Cardinality: **0..N**
 
 ---
 
@@ -314,14 +416,19 @@ Cardinality: **1**
 
 ## Context View
 
-Context View defines which subset of the shared session context an agent reads.
+Context View defines the projection of available session context that an agent reads.
+
+Each agent conceptually reads context through exactly one Context View projection.
 
 Context itself is not part of the Agent Blueprint Canvas because it is not owned by any single agent.
-Context belongs to the surrounding Context Boundary.
+The source context depends on the agent's operating structure:
 
-Context View exists on the canvas because each agent typically uses only part of the shared context available inside that boundary.
+- for a solo agent, the source context is the context available to its implicit one-agent team
+- for an agent inside a Context Boundary, the source context is the shared context available inside that boundary
 
-Typical examples of Context View include:
+Different agents may therefore read different projections of the same underlying context.
+
+Typical examples of content visible through a Context View include:
 
 - conversation summary
 - research brief
@@ -330,9 +437,17 @@ Typical examples of Context View include:
 - intermediate artifacts
 - notes produced by other agents
 
-Context View is optional.
+The Context View section is optional as a canvas artifact.
 
-Cardinality: **0..1**
+If the Context View section is omitted on the canvas, the default interpretation is the unfiltered default view over the full context available to that agent, regardless of whether the agent is solo or shares context with other agents.
+
+A solo agent is therefore not an exception to the projection model. It is simply a one-agent team whose Context Boundary is not shared with any other agent.
+
+Cardinality:
+
+- conceptual projection per agent: **1**
+- canvas section presence: **0..1**
+- listed visible context elements when the section is present: **0..N**
 
 ---
 
@@ -373,7 +488,6 @@ In implementation terms, a tool may correspond to:
 - an API integration
 - a function call
 - a database operation
-- an outbound communication capability
 - another agent invoked as an agent tool
 
 Tool types:
@@ -387,36 +501,29 @@ An **Agent** tool means invoke-and-return.
 The calling agent remains in control, receives the result, and continues execution after the delegated work completes.
 This is distinct from a handoff, where control transfers away from the current agent.
 
-Tool approval markers are tool-level execution constraints.
-They indicate that a specific tool invocation requires human approval before execution.
-
 Knowledge is treated as a special tool type rather than a separate section.
 
 Cardinality: **0..N**
 
 ---
 
-## Output
+## Outgoing
 
-Output defines the response contract of the agent.
+Outgoing defines which high-level communication acts the agent may initiate through channels.
 
-The canvas declares the set of output outcomes the agent is allowed to produce.
-This may include one or more direct response forms, and may also include routing outcomes such as handoff to another agent.
+Typical outgoing communication types are:
 
-Supported output forms:
+- **Query**: the agent may initiate requests for information or judgment from another participant
+- **Command**: the agent may initiate requests for another participant to cause a change in the state of the world
+- **Event**: the agent may publish that a relevant fact or world-state change has happened
 
-- **Text**
-- **Structured**
-- **Handoff**
+Outgoing applies to channel-based communication only.
+If an agent interacts with the external world purely through tools, the agent may have no Outgoing communication capability at all.
 
-A **Handoff** output transfers control from the current agent to another agent or workflow destination.
-It is a routing outcome, not a returned artifact.
+Tool invocation is not Outgoing communication.
+If an agent asks another agent through an **Agent** tool, that interaction follows tool semantics rather than channel communication semantics.
 
-Artifacts created through write tools are not part of the Output section.
-They are considered side effects of tool execution.
-The Output section describes what the agent may return or where it may route execution next.
-
-Cardinality: **1..N**
+Cardinality: **0..N**
 
 ---
 
@@ -427,7 +534,7 @@ Controls are technical guardrails implemented outside the prompt.
 They define which middleware or execution-boundary mechanisms must exist in the final solution.
 Unlike prompt constraints, controls are intended to operate independently of the agent's reasoning and cannot be bypassed through prompt behavior alone.
 
-Controls are represented as a fixed checklist in v1.
+Controls are represented as a list drawn from a fixed control set in v1.
 
 The v1 control set is:
 
@@ -437,7 +544,7 @@ The v1 control set is:
 - **Output Validation**
 - **Audit Trail**
 
-Each checked control means:
+Each listed control means:
 
 > this control category must be present in the implemented execution pipeline.
 
@@ -448,18 +555,35 @@ Cardinality: **0..N** from a fixed set
 
 ---
 
+## Handoffs
+
+Handoffs define which teammate agents may receive transferred control from the current agent.
+
+A handoff is not communication.
+It is an intra-boundary control transfer between agents inside the same Context Boundary.
+
+The handoff section therefore describes routing options within a shared-context team.
+It does not describe tool calls or cross-boundary interaction.
+
+If an agent has no ability to transfer control to another teammate, the Handoffs section may be empty.
+
+Cardinality: **0..N**
+
+---
+
 ## Section Mapping
 
 | Canvas Section | Synonym(s) | Primary Meaning | Typical Implementation Mapping | Cardinality |
 |---|---|---|---|---|
 | Header | identity | Agent identity | Name, role, mode metadata | 1 |
-| Inputs | trigger, request | Request contract | API schema, message schema, event payload | 1..N |
+| Incoming | inbound, receives | Allowed incoming communication acts | Channel-facing query/command/event capability | 0..N |
 | Mission | system prompt | Condensed operating intent | System prompt, base instruction, policy prompt | 1 |
-| Context View | attention scope | Agent-visible subset of shared context | Context projection, selected artifacts, retrieval scope | 0..1 |
+| Context View | attention scope | Agent-visible projection of available context | Context projection, selected artifacts, retrieval scope | section 0..1; concept 1 |
 | Skills | SOPs, prompt modules | Dynamic internal capability modules | `skill.md`, SOP prompt chunk, procedural prompt fragment | 0..N |
 | Tools | MCP, API, function, delegation | External callable capabilities | MCP tool, function, API client, agent tool | 0..N |
-| Output | response contract | Allowed response and routing outcomes | Response model, structured response, handoff contract | 1..N |
-| Controls | guardrails, middleware | External guardrail requirements | Middleware, validators, filters, audit components | 0..N |
+| Outgoing | outbound, emits | Allowed outgoing communication acts | Channel-facing query/command/event capability | 0..N |
+| Controls | guardrails, middleware | External guardrail requirements | List of required control categories | 0..N |
+| Handoffs | control transfer | Allowed intra-team routing options | Intra-boundary control transfer targets | 0..N |
 
 ---
 
@@ -470,8 +594,9 @@ The canvas is intentionally minimal.
 To preserve clarity:
 
 - prompt-level behavioral constraints belong in **Mission** or **Skills**
+- channel-based communication capability belongs in **Incoming** and **Outgoing**
 - external capability declarations belong in **Tools**
-- response and routing outcomes belong in **Output**
+- intra-team control transfer belongs in **Handoffs**
 - technical enforcement outside the prompt belongs in **Controls**
 
 This separation is essential.
@@ -487,9 +612,12 @@ When moving from a single canvas to a larger system view:
 - each agent remains represented by one Agent Blueprint Canvas
 - agents that share the same session context should be enclosed by the same Context Boundary
 - agents without an explicit shared boundary are assumed to operate in separate implicit contexts
+- channels may connect either to a specific agent or to a Context Boundary acting as a team-level intake surface
+- when a channel connects to a Context Boundary, one enclosed agent may take responsibility based on communication capability and system-level coordination
+- channels interact with an agent through its **Incoming** and **Outgoing** communication capability
 - calls to external agents are modeled through **Agent** tools
-- handoff between agents is represented through an allowed **Output** outcome on the sending agent when control moves from one agent to another
-- the receiving agent is modeled through its normal input contract rather than a special handoff input type
+- handoff between agents is represented through the sending agent's **Handoffs** capability when control moves from one agent to another inside the same Context Boundary
+- the receiving agent is modeled through its normal **Incoming** capability rather than a special handoff input type
 - orchestration emerges from the placement of canvases within a larger workflow or system diagram
 - connectors between canvases are standard diagramming elements and are outside the Agent Blueprint Canvas specification
 - shared runtime or context relationships may be represented at the system layer, not inside the canvas itself
@@ -558,7 +686,20 @@ These may be added later if they prove necessary, but are excluded from the init
 
 ---
 
-## Canonical Structure
+## Machine-Readable Schema
+
+The canonical machine-readable structure for v1 is defined in:
+
+- `schemas/agent-blueprint-canvas.schema.json`
+
+The schema reflects this manifest.
+It does not replace the manifest as the semantic authority.
+
+---
+
+## Example Structure
+
+The following YAML is an illustrative example instance of the v1 canvas model:
 
 ```yaml
 agent_blueprint_canvas:
@@ -567,9 +708,9 @@ agent_blueprint_canvas:
     role: "General purpose AI assistant"
     mode: "delegated" # autonomous | delegated
 
-  inputs:
+  incoming:
     - type: "query" # query | command | event
-      name: "user_question"
+      name: "UserQuery"
 
   mission: >
     Help the user understand, create, transform, and organize
@@ -595,23 +736,23 @@ agent_blueprint_canvas:
       name: "uploaded_files"
     - type: "write"
       name: "canvas_edit"
-      approval_required: false
 
-  output:
-    - type: "text" # text | structured | handoff
-      name: "response"
-    - type: "structured"
+  outgoing: [] # query | command | event
+
+  handoffs:
+    - target: "Deep Research"
       name: "research_brief"
 
   controls:
-    input_scope: true
-    data_sensitivity: true
-    injection_defense: true
-    output_validation: true
-    audit_trail: true
+    - "Input Scope"
+    - "Data Sensitivity"
+    - "Injection Defense"
+    - "Output Validation"
+    - "Audit Trail"
 ```
 
-This structure is the canonical canvas-level representation for v1.
+This example is provided for readability.
+For validation and canonical machine-readable structure, use `schemas/agent-blueprint-canvas.schema.json`.
 
 Shared context itself is not part of the Agent Blueprint Canvas structure.
 Shared context is represented by the Context Boundary in the larger system view.

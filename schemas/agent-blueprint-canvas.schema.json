@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Agent Blueprint Canvas",
+  "description": "Canonical machine-readable schema for the Agent Blueprint Canvas v1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["agent_blueprint_canvas"],
+  "properties": {
+    "agent_blueprint_canvas": {
+      "$ref": "#/$defs/agentBlueprintCanvas"
+    }
+  },
+  "$defs": {
+    "agentBlueprintCanvas": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "header",
+        "incoming",
+        "mission",
+        "skills",
+        "tools",
+        "outgoing",
+        "controls",
+        "handoffs"
+      ],
+      "properties": {
+        "header": {
+          "$ref": "#/$defs/header"
+        },
+        "incoming": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/communicationItem"
+          },
+          "default": []
+        },
+        "mission": {
+          "type": "string",
+          "minLength": 1
+        },
+        "context_view": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": []
+        },
+        "skills": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": []
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/tool"
+          },
+          "default": []
+        },
+        "outgoing": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/communicationItem"
+          },
+          "default": []
+        },
+        "controls": {
+          "$ref": "#/$defs/controls"
+        },
+        "handoffs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/handoff"
+          },
+          "default": []
+        }
+      }
+    },
+    "header": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "role", "mode"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["autonomous", "delegated"]
+        }
+      }
+    },
+    "communicationItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "name"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["query", "command", "event"]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "tool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "name"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["read", "knowledge", "write", "agent"]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "controls": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "Input Scope",
+          "Data Sensitivity",
+          "Injection Defense",
+          "Output Validation",
+          "Audit Trail"
+        ]
+      },
+      "uniqueItems": true,
+      "default": []
+    },
+    "handoff": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target"],
+      "properties": {
+        "target": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

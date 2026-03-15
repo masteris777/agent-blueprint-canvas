@@ -1,4 +1,6 @@
-# Agent Blueprint
+# Agent Blueprint Canvas
+
+Reveal the forest behind the trees.
 
 The Agent Blueprint is a visual design canvas for defining AI agents before implementation.
 
@@ -8,7 +10,7 @@ The canonical specification lives in [manifest.md](manifest.md).
 
 ## Why This Exists
 
-Agent design conversations break down because too many concerns must be held in working memory at once: inputs, outputs, tools, skills, controls, and shared context boundaries.
+Agent design conversations break down because too many concerns must be held in working memory at once: incoming communication, outgoing communication, tools, skills, controls, and shared context boundaries.
 
 The Agent Blueprint externalizes that discussion into a structured visual form.
 
@@ -35,47 +37,63 @@ Those concerns belong to technical design, workflow design, and implementation a
 
 ## Canvas Structure
 
-The v1 Agent Blueprint Canvas contains eight sections:
+The v1 Agent Blueprint Canvas contains nine sections:
 
 1. Header
-2. Inputs
+2. Incoming
 3. Mission
 4. Context View
 5. Skills
 6. Tools
-7. Output
+7. Outgoing
 8. Controls
+9. Handoffs
 
 Shared context itself is not part of the canvas.
 Shared context is represented by a Context Boundary in the surrounding system view.
 
 ## Visual Examples
 
-Single-agent example:
+### Personal Watchtower
 
-![ChatGPT agent blueprint canvas](assets/chat-gpt-agent.example.png)
+Independent watcher agents with no shared context. The email watcher emits breaking-news style events that the chat watcher can react to. This example demonstrates event choreography between autonomous specialists.
 
-Specialist-agent example:
+![Personal watchtower example](assets/personal-watchtower.png)
 
-![Deep Research agent blueprint canvas](assets/deep-research-agent.example.png)
+Source: [examples/personal-watchtower.excalidraw](examples/personal-watchtower.excalidraw)
 
-Shared-context system example:
+### Chat Agent And Deep Research
 
-![Multi-agent context boundary example](assets/multi-agent-context.example.png)
+A delegated chat agent that can answer directly, use read and write tools, and invoke a deep research agent through an agent tool. This example demonstrates tool-based delegation without a shared context boundary or event channel.
+
+![Chat agent and deep research example](assets/chat-agent.png)
+
+Source: [examples/chat-agent.excalidraw](examples/chat-agent.excalidraw)
+
+### Developer Bot
+
+Three delegated agents arranged as a shared-context team: Planner, Executor, and Tester. Work enters through Planner, moves internally by handoff, and only exits through Tester after verification. The exported image is tall, so it may not fit comfortably on one screen at full size; open the source canvas to inspect the full vertical flow and the handoff loop.
+
+![Developer bot example](assets/developer-bot.png)
+
+Source: [examples/developer-bot.excalidraw](examples/developer-bot.excalidraw)
 
 ## Repository Contents
 
 - [manifest.md](manifest.md): canonical v1 specification
 - [templates/agent-blueprint-canvas.md](templates/agent-blueprint-canvas.md): text-first fill-in template
 - [templates/agent-blueprint-library.excalidrawlib](templates/agent-blueprint-library.excalidrawlib): reusable Excalidraw component library
-- [examples/chatgpt-deep-research.md](examples/chatgpt-deep-research.md): worked multi-agent example
+- [examples/personal-watchtower.excalidraw](examples/personal-watchtower.excalidraw): autonomous watcher network with event choreography
+- [examples/chat-agent.excalidraw](examples/chat-agent.excalidraw): delegated chat agent with deep research tool delegation
+- [examples/developer-bot.excalidraw](examples/developer-bot.excalidraw): shared-context Planner, Executor, Tester team
+- [assets/](assets): exported PNG previews of the three canonical examples
 
 ## How To Use It
 
 1. Define the Agent Blueprint Canvas using the section structure in [manifest.md](manifest.md).
 2. Place one or more canvases inside a larger system view.
 3. Use a dashed Context Boundary to show which agents share the same session context.
-4. Use Context View on each canvas to show which part of that shared context the agent actually reads.
+4. Use Context View on each canvas when you need to show the agent's projection of available context. If omitted, the default interpretation is the full available context for that agent.
 5. Use BPMN or similar workflow notation if you need explicit sequencing, branching, retries, approvals, or escalation logic.
 6. Treat the result as the handoff artifact for detailed technical design and workflow design.
 
