@@ -1,6 +1,8 @@
 # Agent Blueprint Canvas
 
-Reveal the forest behind the trees.
+_Reveal the forest behind the trees._
+
+**Try it:** [GitHub Spark](https://agent-blueprint-canv--masteris777.github.app/) · [Firebase](https://studio-3006097909-4815a.web.app/)
 
 The Agent Blueprint is a visual design canvas for defining AI agents before implementation.
 
