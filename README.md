@@ -83,6 +83,8 @@ Source: [examples/developer-bot.excalidraw](examples/developer-bot.excalidraw)
 - [manifest.md](manifest.md): canonical v1 specification
 - [templates/agent-blueprint-canvas.md](templates/agent-blueprint-canvas.md): text-first fill-in template
 - [templates/agent-blueprint-library.excalidrawlib](templates/agent-blueprint-library.excalidrawlib): reusable Excalidraw component library
+- [tools/ui-renderer/spec.md](tools/ui-renderer/spec.md): builder-neutral spec for a YAML-to-canvas UI renderer
+- [tools/ui-renderer/README.md](tools/ui-renderer/README.md): live app links and regeneration instructions
 - [examples/personal-watchtower.excalidraw](examples/personal-watchtower.excalidraw): autonomous watcher network with event choreography
 - [examples/chat-agent.excalidraw](examples/chat-agent.excalidraw): delegated chat agent with deep research tool delegation
 - [examples/developer-bot.excalidraw](examples/developer-bot.excalidraw): shared-context Planner, Executor, Tester team
